@@ -1,0 +1,33 @@
+{
+  "name": "open-computer-use-supervisor",
+  "version": "1.0.0-rc.1",
+  "description": "Session-scoped lifecycle and safety layer for AI computer-use agents",
+  "type": "module",
+  "main": "src/index.mjs",
+  "bin": {
+    "open-computer-use-supervisor": "bin/open-computer-use-supervisor",
+    "agy-supervisor": "bin/agy-supervisor"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timexingxin/open-computer-use-supervisor.git"
+  },
+  "keywords": [
+    "computer-use",
+    "ai-agents",
+    "desktop-automation",
+    "playwright",
+    "mcp",
+    "process-management",
+    "security",
+    "macos"
+  ],
+  "author": "Open Computer-Use Supervisor Contributors",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+import { runCli } from '../src/cli.mjs';
+
+runCli(process.argv.slice(2)).then(code => {
+  process.exit(code || 0);
+}).catch(err => {
+  console.error(`Fatal Error in open-computer-use-supervisor:`, err);
+  process.exit(1);
+});

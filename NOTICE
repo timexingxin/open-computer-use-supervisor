@@ -1,0 +1,11 @@
+Open Computer-Use Supervisor
+Copyright 2026 Open Computer-Use Supervisor Contributors
+
+This product includes software developed by the Open Computer-Use Supervisor Contributors.
+
+External Software Acknowledgements:
+- Node.js (Node.js Foundation) - MIT License
+- Playwright (Microsoft Corporation) - Apache License 2.0
+
+Interoperability Note:
+This software optionally interoperates with external software runtimes (such as Google Chrome, Playwright, and ZCode Computer Use). No proprietary code, binaries, or intellectual property from those external runtimes are included, distributed, or bundled with this repository.
