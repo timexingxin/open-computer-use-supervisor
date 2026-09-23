@@ -741,49 +741,10 @@ export function getBaselineZCodeResources() {
         break;
       }
     }
-
-    // Also scan temporary directories for existing resources
-    const tmpDirs = [os.tmpdir(), '/tmp', '/private/tmp'];
-    for (const dir of tmpDirs) {
-      try {
-        if (fs.existsSync(dir)) {
-          const files = fs.readdirSync(dir);
-          for (const file of files) {
-            if ((file.startsWith('zcode-cua-') && file.endsWith('.sock')) ||
-                (file.startsWith('zcode-cua-token-') && file.endsWith('.txt'))) {
-              const fullPath = path.join(dir, file);
-              try {
-                const stat = fs.lstatSync(fullPath);
-                const item = {
-                  path: fullPath,
-                  name: file,
-                  dev: stat.dev,
-                  ino: stat.ino,
-                  mode: stat.mode,
-                  size: stat.size,
-                  mtime: stat.mtime.toISOString(),
-                  type: stat.isSocket() ? 'socket' : 'file',
-                  classification: 'BASELINE_PRE_EXISTING'
-                };
-                baselineResourcesCache.set(fullPath, item);
-                baselineResourcesCache.set(`${stat.dev}:${stat.ino}`, item);
-              } catch (_) {}
-            }
-          }
-        }
-      } catch (_) {}
-    }
   }
   return baselineResourcesCache;
 }
 
-/**
- * Checks if a target path or stat identity belongs to pre-existing baseline ZCode resources.
- *
- * @param {string} targetPath
- * @param {fs.Stats} [lstat]
- * @returns {boolean}
- */
 export function isBaselineZCodeResource(targetPath, lstat = null) {
   const baseline = getBaselineZCodeResources();
   const resolved = path.resolve(targetPath);

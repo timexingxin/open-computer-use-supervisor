@@ -272,7 +272,10 @@ test('TEST G: Inode Replacement / TOCTOU defense blocks deletion', async () => {
 
     // Simulate attacker replacing file A with file B at same path
     fs.unlinkSync(targetPath);
+    const dummyHolder = targetPath + '.holder';
+    fs.writeFileSync(dummyHolder, 'holder');
     fs.writeFileSync(targetPath, 'substituted file B with new inode');
+    try { fs.unlinkSync(dummyHolder); } catch (_) {}
     const newLstat = fs.lstatSync(targetPath);
 
     // Verify inode changed

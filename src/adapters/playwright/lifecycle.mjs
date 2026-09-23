@@ -232,8 +232,8 @@ export async function launchOrphanTestBrowser(sessionId, broker, options = {}) {
       });
 
       console.log('ORPHAN_MAIN_PID:' + child.pid);
-      // Exit after giving parent time to read PID
-      setTimeout(() => { process.exit(0); }, 100);
+      process.stdin.on('end', () => process.exit(0));
+      setTimeout(() => { process.exit(0); }, 3000);
     `;
 
     const launcher = spawn(process.execPath, ['-e', launcherScript], {
@@ -279,7 +279,8 @@ export async function launchOrphanTestBrowser(sessionId, broker, options = {}) {
           return reject(new Error(`Attest orphan failed: ${attestRes.error}`));
         }
 
-        // Wait for launcher to exit naturally
+        try { launcher.stdin.end(); } catch (_) {}
+        try { launcher.kill('SIGTERM'); } catch (_) {}
         await sleep(300);
 
         // Verify launcher is dead

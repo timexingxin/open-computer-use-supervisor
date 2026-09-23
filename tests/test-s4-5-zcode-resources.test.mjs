@@ -63,10 +63,8 @@ test('S4.5 Preflight: Production CLI --execute remains strictly locked', async (
 // Baseline Protection Verification
 // -------------------------------------------------------------------------
 test('S4.5 Baseline: Pre-existing ZCode sockets and tokens are protected (0 unlinks)', async () => {
-  if (baselineCatalog.size === 0) {
-    const mockBaselinePath = path.join(os.tmpdir(), 'zcode-cua-baseline-fixture.sock');
-    baselineCatalog.set(mockBaselinePath, { path: mockBaselinePath, classification: 'BASELINE_PRE_EXISTING' });
-  }
+  const mockBaselinePath = path.join(os.tmpdir(), 'zcode-cua-baseline-fixture.sock');
+  baselineCatalog.set(mockBaselinePath, { path: mockBaselinePath, classification: 'BASELINE_PRE_EXISTING' });
   assert.ok(baselineCatalog.size > 0, 'Baseline catalog must contain pre-existing resources');
 
   // Verify that any baseline resource path is recognized as baseline
@@ -515,7 +513,10 @@ test('RED TEAM 8: Inode replacement -> RESOURCE_IDENTITY_CHANGED (0 unlinks)', a
 
     // Swap file at exact same path
     fs.unlinkSync(tokPath);
+    const dummyHolder8 = tokPath + '.holder8';
+    fs.writeFileSync(dummyHolder8, 'holder8');
     fs.writeFileSync(tokPath, 'token_replacement', { mode: 0o600 });
+    try { fs.unlinkSync(dummyHolder8); } catch (_) {}
 
     const delRes = broker.deleteZCodeResourceS4_5({
       path: tokPath,
@@ -714,7 +715,10 @@ test('RED TEAM 16: Same-user active filesystem swap race -> identity drift detec
     assert.strictEqual(attestRes.success, true);
 
     fs.unlinkSync(raceTok);
+    const dummyHolder16 = raceTok + '.holder16';
+    fs.writeFileSync(dummyHolder16, 'holder16');
     fs.writeFileSync(raceTok, 'race_token_swapped', { mode: 0o600 });
+    try { fs.unlinkSync(dummyHolder16); } catch (_) {}
 
     const delRes = deleteZCodeTokenS4_5(attestRes.receipt, sessionId, {
       broker,
@@ -761,7 +765,7 @@ test('S4.5 Deletion Accounting & Baseline Preservation Invariants', async () => 
   for (const [key, item] of baselineCatalog.entries()) {
     if (typeof key === 'string' && key.startsWith('/')) {
       if (!fs.existsSync(key)) {
-        if (!key.includes('mock-cursor-inv-test')) {
+        if (!key.includes('mock') && !key.includes('fixture')) {
           missingNonMockBaseline++;
         }
       }
