@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { execSync, execFileSync } from 'node:child_process';
 import crypto from 'node:crypto';
 
@@ -58,6 +59,35 @@ export function extractCanonicalExecutable(command, comm) {
 }
 
 /**
+ * Checks if a process exists as a zombie/defunct in the OS.
+ * On Linux, reads /proc/<pid>/status looking for State: Z or X.
+ * On macOS / BSD, executes ps -p <pid> -o state= looking for leading 'Z'.
+ *
+ * @param {number} pid
+ * @returns {boolean}
+ */
+export function isProcessZombie(pid) {
+  if (typeof pid !== 'number' || pid <= 0) return false;
+  if (process.platform === 'linux') {
+    try {
+      const status = fs.readFileSync(`/proc/${pid}/status`, 'utf8');
+      return /^State:\s+[ZX]/m.test(status);
+    } catch (err) {
+      if (err.code === 'ENOENT') return false;
+    }
+  }
+  try {
+    const stdout = execFileSync('ps', ['-p', String(pid), '-o', 'state='], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).trim();
+    return stdout.startsWith('Z');
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
  * Retrieves a live OS process snapshot for a given PID.
  *
  * @param {number} pid
@@ -65,6 +95,7 @@ export function extractCanonicalExecutable(command, comm) {
  */
 export function getProcessSnapshot(pid) {
   if (typeof pid !== 'number' || pid <= 0) return null;
+  if (isProcessZombie(pid)) return null;
   try {
     const stdout = execFileSync('ps', ['-p', String(pid), '-o', 'pid=,ppid=,pgid=,lstart=,comm=,command='], {
       encoding: 'utf8',
@@ -129,7 +160,7 @@ export function getProcessSnapshot(pid) {
 }
 
 /**
- * Checks if a process is alive using POSIX signal 0.
+ * Checks if a process is alive using POSIX signal 0 and confirming it is not a zombie.
  *
  * @param {number} pid
  * @returns {boolean}
@@ -138,13 +169,19 @@ export function checkProcessAlive(pid) {
   if (typeof pid !== 'number' || pid <= 0) return false;
   try {
     process.kill(pid, 0);
-    return true;
   } catch (err) {
-    if (err.code === 'EPERM') {
-      return true;
+    if (err.code === 'ESRCH') {
+      return false;
     }
+    if (err.code !== 'EPERM') {
+      return false;
+    }
+  }
+  // A zombie process still has an entry in the kernel table, but is effectively dead
+  if (isProcessZombie(pid)) {
     return false;
   }
+  return true;
 }
 
 /**

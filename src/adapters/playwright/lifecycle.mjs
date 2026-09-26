@@ -211,12 +211,25 @@ export async function launchOrphanTestBrowser(sessionId, broker, options = {}) {
   const userDataDir = path.join(RUNTIME_ROOT, 'sessions', sessionId, profileName);
   fs.mkdirSync(userDataDir, { recursive: true });
 
-  const exePath = getChromiumHeadlessShellPath();
+  const isDeterministic = Boolean(options.useDeterministicFixture);
+  const exePath = isDeterministic ? process.execPath : getChromiumHeadlessShellPath();
 
-  // Launcher child process that starts detached Chromium and exits immediately
+  // Launcher child process that starts detached child and exits immediately
   return new Promise((resolve, reject) => {
     // 1. Pre-register launcher intent
-    const launcherScript = `
+    const launcherScript = isDeterministic ? `
+      const { spawn } = require('child_process');
+      const child = spawn(process.execPath, [
+        '-e',
+        'process.on("SIGTERM", () => { process.exit(0); }); setInterval(() => {}, 1000);'
+      ], {
+        detached: true,
+        stdio: 'ignore'
+      });
+      console.log('ORPHAN_MAIN_PID:' + child.pid);
+      process.stdin.on('end', () => process.exit(0));
+      setTimeout(() => { process.exit(0); }, 3000);
+    ` : `
       const { spawn } = require('child_process');
       const fs = require('fs');
 
