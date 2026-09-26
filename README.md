@@ -43,7 +43,7 @@ To prevent confusion, Open Computer-Use Supervisor is strictly scoped:
 - :x: **Not a generic process killer** (it does not hunt or clean arbitrary processes).
 - :x: **Not a background system daemon** (it runs strictly bounded within active agent sessions).
 
-**It IS a lifecycle safety supervisor** that ensures agentic experiments remain clean, bounded, and incapable of harming host workstation state.
+**It IS a lifecycle safety supervisor** that ensures agentic experiments remain clean, bounded, and designed to minimize the risk of interfering with unrelated host workstation state.
 
 ---
 
@@ -119,7 +119,7 @@ Open Computer-Use Supervisor is designed under a defense-in-depth model with rea
 - :white_check_mark: **Defends Against**: Accidental process leaks, rogue agent children, PID wrap-around/reuse, TOCTOU symlink swaps within user permissions, corrupted session state, and rogue test cleanup scripts.
 - :warning: **Honest Limitations**:
   - **No Kernel-Level Isolation**: Does not protect against local root attackers or processes with `ptrace`/debugger privileges.
-  - **Userspace TOCTOU Window**: Path unlinking contains a standard sub-millisecond userspace race window (mitigated via dev/inode rechecks and fail-closed validation, but not mathematically instantaneous).
+  - **Userspace TOCTOU Window**: Path unlinking contains a standard sub-millisecond userspace race window (mitigates common symlink-swap and TOCTOU scenarios through dev/inode revalidation and fail-closed checks, but absolute mathematical atomicity cannot be claimed without kernel extension).
   - **Platform Focus**: Primary test coverage currently focuses on macOS and POSIX environments.
 
 See [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md) for full formal attack surface analysis.
@@ -135,6 +135,8 @@ git clone https://github.com/timexingxin/open-computer-use-supervisor.git
 cd open-computer-use-supervisor
 npm install
 ```
+
+> **Note on Test Dependencies**: `playwright` is declared as a `devDependency` in `package.json` and locked in `package-lock.json`. Running `npm install` ensures all test harnesses and lifecycle mock/integration dependencies are fully available for `npm test`.
 
 ### Running the Test Suite
 

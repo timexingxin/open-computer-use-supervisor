@@ -87,3 +87,10 @@ At the conclusion of all 133 regression and soak tests:
 1. **Explicit Invocations Only**: Destructive lifecycle actions are not bound to automatic session exit hooks or IDE stop hooks.
 2. **Non-Root Operation**: The Supervisor operates as an unprivileged userspace daemon. It cannot manage or inspect root-owned host processes.
 3. **Scoped Workload Focus**: The Supervisor exclusively manages workloads created with explicit creation receipts under its authority.
+
+---
+
+## 7. Dependency Audit Clarification (Playwright devDependency)
+
+- **Audit Confirmation**: Playwright (`^1.63.0`) has always been declared in `devDependencies` in `package.json` and pinned in `package-lock.json`.
+- **Clarification**: Early developer testing observations regarding missing Playwright were caused by a fresh checkout environment where `npm install` had not yet been executed before running tests. With dependencies installed, all 16 test suites (133 tests) execute and pass deterministically.

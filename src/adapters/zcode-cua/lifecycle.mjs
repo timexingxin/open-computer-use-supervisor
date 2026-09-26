@@ -157,6 +157,7 @@ function getDefaultBridgePath() {
   if (!process.env.HOME) return '';
   const candidates = [
     path.join(process.env.HOME, '.local/share/open-computer-use-supervisor/mcp-bridges/zcode-cua-bridge.mjs'),
+    // LEGACY COMPATIBILITY FALLBACK: legacy antigravity bridge path retained for backward compatibility
     path.join(process.env.HOME, '.local/share/antigravity/mcp-bridges/zcode-cua-bridge.mjs')
   ];
   return candidates.find(p => fs.existsSync(p)) || candidates[0];
