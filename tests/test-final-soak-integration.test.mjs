@@ -294,10 +294,15 @@ test('Parallel Sessions: Session A & Session B Isolation (Receipts & Cleanup Dec
     if (chainA.helperPid) { try { process.kill(chainA.helperPid, 'SIGKILL'); } catch (_) {} }
     if (chainA.mcpPid) { try { process.kill(chainA.mcpPid, 'SIGKILL'); } catch (_) {} }
     const startA = Date.now();
-    while (Date.now() - startA < 2000) {
-      if (!checkProcessAlive(chainA.bridgePid) && (!chainA.helperPid || !checkProcessAlive(chainA.helperPid))) break;
+    while (Date.now() - startA < 3000) {
+      const bridgeDead = !checkProcessAlive(chainA.bridgePid);
+      const helperDead = !chainA.helperPid || !checkProcessAlive(chainA.helperPid);
+      const runnerDead = !chainA.runnerPid || !checkProcessAlive(chainA.runnerPid);
+      const mcpDead = !chainA.mcpPid || !checkProcessAlive(chainA.mcpPid);
+      if (bridgeDead && helperDead && runnerDead && mcpDead) break;
       await sleep(50);
     }
+    await sleep(100);
     const delResA = brokerA.deleteZCodeResourceS4_5({
       path: chainA.socketPath,
       testExecutionMode: S4_5_RESOURCE_CONFIG.testExecutionMode
@@ -314,10 +319,15 @@ test('Parallel Sessions: Session A & Session B Isolation (Receipts & Cleanup Dec
     if (chainB.helperPid) { try { process.kill(chainB.helperPid, 'SIGKILL'); } catch (_) {} }
     if (chainB.mcpPid) { try { process.kill(chainB.mcpPid, 'SIGKILL'); } catch (_) {} }
     const startB = Date.now();
-    while (Date.now() - startB < 2000) {
-      if (!checkProcessAlive(chainB.bridgePid) && (!chainB.helperPid || !checkProcessAlive(chainB.helperPid))) break;
+    while (Date.now() - startB < 3000) {
+      const bridgeDead = !checkProcessAlive(chainB.bridgePid);
+      const helperDead = !chainB.helperPid || !checkProcessAlive(chainB.helperPid);
+      const runnerDead = !chainB.runnerPid || !checkProcessAlive(chainB.runnerPid);
+      const mcpDead = !chainB.mcpPid || !checkProcessAlive(chainB.mcpPid);
+      if (bridgeDead && helperDead && runnerDead && mcpDead) break;
       await sleep(50);
     }
+    await sleep(100);
     const delResB = brokerB.deleteZCodeResourceS4_5({
       path: chainB.socketPath,
       testExecutionMode: S4_5_RESOURCE_CONFIG.testExecutionMode
@@ -428,10 +438,15 @@ test('Double-Action Safety & Idempotency: Duplicate Signal and Duplicate Unlink 
     if (chain.helperPid) { try { process.kill(chain.helperPid, 'SIGKILL'); } catch (_) {} }
     if (chain.mcpPid) { try { process.kill(chain.mcpPid, 'SIGKILL'); } catch (_) {} }
     const start = Date.now();
-    while (Date.now() - start < 2000) {
-      if (!checkProcessAlive(chain.bridgePid) && (!chain.helperPid || !checkProcessAlive(chain.helperPid))) break;
+    while (Date.now() - start < 3000) {
+      const bridgeDead = !checkProcessAlive(chain.bridgePid);
+      const helperDead = !chain.helperPid || !checkProcessAlive(chain.helperPid);
+      const runnerDead = !chain.runnerPid || !checkProcessAlive(chain.runnerPid);
+      const mcpDead = !chain.mcpPid || !checkProcessAlive(chain.mcpPid);
+      if (bridgeDead && helperDead && runnerDead && mcpDead) break;
       await sleep(50);
     }
+    await sleep(100);
 
     // First unlink
     const del1 = broker.deleteZCodeResourceS4_5({
