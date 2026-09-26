@@ -21,3 +21,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Tombstoning & Lifecycle State Metrics**: Bounded memory tracking for retired processes and resources.
 - **Adversarial & Soak Test Suites**: 133 automated tests validating zero signals to unmanaged services and zero unlinks of pre-existing baseline resources.
 - **Production Execution Lock**: Fail-closed gate (`executeAllowed = false`) enforcing dry-run safety for general production CLI usage.
+- **Dependency Audit & Packaging**: Clarified that `playwright` devDependency has always been properly declared in `package.json` and `package-lock.json`.

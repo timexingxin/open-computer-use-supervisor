@@ -69,7 +69,7 @@ export async function runCli(argv = process.argv.slice(2)) {
       }
 
       console.log(`=======================================================`);
-      console.log(` ANTIGRAVITY PROCESS SUPERVISOR (Session Status)       `);
+      console.log(` OPEN COMPUTER-USE SUPERVISOR (Session Status)         `);
       console.log(` Phase: ${PHASE_V0_1_CONFIG.phase} | Version: ${PHASE_V0_1_CONFIG.version} `);
       console.log(`=======================================================`);
       console.log(`Session ID    : ${data.session.sessionId}`);
@@ -173,13 +173,13 @@ export async function runCli(argv = process.argv.slice(2)) {
         console.error(`\n[ERROR: FAIL CLOSED GATE ENFORCED]`);
         console.error(`--execute is strictly locked in Phase ${PHASE_V0_1_CONFIG.phase}!`);
         console.error(`Reason: ${PHASE_V0_1_CONFIG.lockReason}`);
-        console.error(`In accordance with Antigravity Phase S1.3 safety rules, no POSIX kill`);
+        console.error(`In accordance with Open Computer-Use Supervisor safety rules, no POSIX kill`);
         console.error(`signals or unlinks may be executed on this machine.\n`);
         return 1;
       }
 
       console.log(`=======================================================`);
-      console.log(` AGY-SUPERVISOR CLEANUP (DRY-RUN ONLY)                  `);
+      console.log(` OPEN-COMPUTER-USE-SUPERVISOR CLEANUP (DRY-RUN ONLY)    `);
       console.log(` Session: ${sessionId}                                 `);
       console.log(` Mode: STRICT DRY-RUN (Zero Signal, Zero Unlink)        `);
       console.log(`=======================================================`);

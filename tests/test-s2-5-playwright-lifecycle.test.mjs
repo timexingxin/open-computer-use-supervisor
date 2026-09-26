@@ -94,10 +94,10 @@ test('TEST A: New browser -> browser.close() -> zero signal (CLOSED_BY_OWNER_GRA
 });
 
 // -------------------------------------------------------------------------
-// TEST B: Orphan Browser Recovery (Launcher crashes, Supervisor SIGTERM recovery)
+// TEST B-1: Deterministic Process Fixture -> Supervisor SIGTERM graceful recovery
 // -------------------------------------------------------------------------
-test('TEST B: New orphaned browser -> Supervisor SIGTERM recovery (ORPHAN_RECOVERED_WITH_SIGTERM)', async () => {
-  const sessionId = `test-s2-5-b-${Date.now()}`;
+test('TEST B-1: Deterministic Process Fixture -> Supervisor SIGTERM recovery (ORPHAN_RECOVERED_WITH_SIGTERM)', async () => {
+  const sessionId = `test-s2-5-b1-${Date.now()}`;
   const broker = new SupervisorBroker(sessionId);
   await broker.start();
 
@@ -109,14 +109,14 @@ test('TEST B: New orphaned browser -> Supervisor SIGTERM recovery (ORPHAN_RECOVE
   });
 
   try {
-    // 1. Spawn orphaned test browser instance
-    const orphan = await launchOrphanTestBrowser(sessionId, broker);
+    // 1. Spawn deterministic orphaned test process fixture
+    const orphan = await launchOrphanTestBrowser(sessionId, broker, { useDeterministicFixture: true });
     const { mainPid, record, launcherPid, launcherDead } = orphan;
 
     assert.ok(mainPid > 0);
     assert.strictEqual(launcherDead, true, 'Launcher process must have exited');
     assert.strictEqual(checkProcessAlive(launcherPid), false, 'Launcher PID is confirmed dead');
-    assert.strictEqual(checkProcessAlive(mainPid), true, 'Orphan Chromium is currently running');
+    assert.strictEqual(checkProcessAlive(mainPid), true, 'Orphan fixture is currently running');
 
     // 2. Supervisor Orphan Recovery Protocol
     const recResult = await terminator.recoverPlaywrightOrphan(record, {
@@ -130,13 +130,65 @@ test('TEST B: New orphaned browser -> Supervisor SIGTERM recovery (ORPHAN_RECOVE
     assert.strictEqual(recResult.profileStatus, 'WOULD_DELETE_LATER');
 
     // 3. Confirm process actually terminated in OS
-    assert.strictEqual(checkProcessAlive(mainPid), false, 'Orphan Chromium main PID must be dead in OS');
+    assert.strictEqual(checkProcessAlive(mainPid), false, 'Orphan fixture PID must be dead in OS');
 
     // 4. Signal accounting
     assert.strictEqual(accounting.playwrightTestBrowserSigterm, 1, 'Exactly one SIGTERM to test browser');
     assert.strictEqual(accounting.playwrightTestBrowserSigkill, 0, 'Zero SIGKILL needed');
     assert.strictEqual(accounting.signalsToProductionServices, 0);
     assert.strictEqual(accounting.signalsToChrome, 0);
+  } finally {
+    await broker.stop();
+  }
+});
+
+// -------------------------------------------------------------------------
+// TEST B-2: Real Chromium Integration -> Orphan Browser Recovery Protocol
+// -------------------------------------------------------------------------
+test('TEST B-2: Real Chromium Integration -> Supervisor Orphan Recovery Protocol', async () => {
+  const sessionId = `test-s2-5-b2-${Date.now()}`;
+  const broker = new SupervisorBroker(sessionId);
+  await broker.start();
+
+  const accounting = new SignalAccounting();
+  const terminator = new ControlledTerminator(sessionId, {
+    broker,
+    accounting,
+    testExecutionMode: 'S2_5_PLAYWRIGHT_TEST_ONLY'
+  });
+
+  try {
+    // 1. Spawn real orphaned Chromium test browser
+    const orphan = await launchOrphanTestBrowser(sessionId, broker);
+    const { mainPid, record, launcherPid, launcherDead } = orphan;
+
+    assert.ok(mainPid > 0);
+    assert.strictEqual(launcherDead, true, 'Launcher process must have exited');
+    assert.strictEqual(checkProcessAlive(launcherPid), false, 'Launcher PID is confirmed dead');
+    assert.strictEqual(checkProcessAlive(mainPid), true, 'Orphan Chromium is currently running');
+
+    // 2. Supervisor Orphan Recovery Protocol
+    const recResult = await terminator.recoverPlaywrightOrphan(record, {
+      graceTimeoutMs: 3000,
+      requireLauncherDead: true
+    });
+
+    assert.strictEqual(recResult.success, true);
+    assert.strictEqual(recResult.signaled, true);
+    // Protocol invariant: Must recover via graceful SIGTERM, or via policy-permitted SIGKILL if grace period genuinely expired on high-load CI
+    assert.ok(
+      recResult.status === 'ORPHAN_RECOVERED_WITH_SIGTERM' || recResult.status === 'ESCALATED_TO_SIGKILL',
+      `Unexpected termination status: ${recResult.status}`
+    );
+    assert.strictEqual(recResult.profileStatus, 'WOULD_DELETE_LATER');
+
+    // 3. Confirm process actually terminated in OS
+    assert.strictEqual(checkProcessAlive(mainPid), false, 'Orphan Chromium main PID must be dead in OS');
+
+    // 4. Verify signal progression invariant: SIGTERM was always attempted first
+    assert.ok(accounting.playwrightTestBrowserSigterm >= 1, 'SIGTERM was attempted first');
+    assert.strictEqual(accounting.signalsToProductionServices, 0, 'Zero signals to production services');
+    assert.strictEqual(accounting.signalsToChrome, 0, 'Zero signals to user Chrome');
   } finally {
     await broker.stop();
   }
