@@ -29,7 +29,7 @@ When AI agents drive computer-use frameworks (e.g. headless browsers, desktop au
 
 Traditional process killers use coarse pattern-matching (`killall chromium`, `pkill -f node`), which risks terminating the user's primary browser, destroying active development sessions, or causing catastrophic data loss.
 
-**Open Computer-Use Supervisor** provides a cryptographic, provenance-backed barrier: **no process is ever signaled, and no file is ever unlinked, unless the current active session can prove with mathematical and structural certainty that it was responsible for launching or creating that specific entity.**
+**Open Computer-Use Supervisor** provides a provenance-backed barrier: **no process is ever signaled, and no file is ever unlinked, unless the current active session can establish fail-closed, multi-factor ownership verification that it was responsible for launching or creating that specific entity.**
 
 ---
 
