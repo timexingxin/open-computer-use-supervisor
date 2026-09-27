@@ -152,15 +152,16 @@ test('Scenario C: Mixed Browser + Native Workflow (Independent Routing & Clean L
 // -------------------------------------------------------------------------
 // 5. Scenario D — Failure Recovery (Orphan Browser + Orphan Helper)
 // -------------------------------------------------------------------------
-test('Scenario D: Failure Recovery (Only Exact Owned Orphans Recovered via Scoped SIGTERM)', async () => {
+test('Scenario D: Failure Recovery (Owned Orphan Fixture + ZCode Helper via Scoped SIGTERM)', async () => {
   const sessionId = `soak-recovery-${Date.now()}`;
   const broker = new SupervisorBroker(sessionId);
   await broker.start();
 
   try {
-    // 1. Playwright Orphan Recovery
-    const orphanBrowser = await launchOrphanTestBrowser(sessionId, broker);
-    assert.strictEqual(checkProcessAlive(orphanBrowser.mainPid), true, 'Orphan browser is running');
+    // 1. Deterministic orphan fixture proves the SIGTERM path. Real Chromium
+    // lifecycle remains covered separately by the S2.5 B-2 integration test.
+    const orphanBrowser = await launchOrphanTestBrowser(sessionId, broker, { useDeterministicFixture: true });
+    assert.strictEqual(checkProcessAlive(orphanBrowser.mainPid), true, 'Orphan fixture is running');
 
     const browserTerminator = new ControlledTerminator(sessionId, {
       broker,

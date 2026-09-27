@@ -705,6 +705,21 @@ export class ControlledTerminator {
         isPlaywrightTest: true
       });
 
+      // A successfully dispatched SIGKILL is not proof that the target exited.
+      // Keep the result fail-closed until the OS confirms it is no longer live.
+      const confirmDeadline = Date.now() + 3000;
+      while (Date.now() < confirmDeadline && checkProcessAlive(record.pid)) {
+        await sleep(pollIntervalMs);
+      }
+      if (checkProcessAlive(record.pid)) {
+        return {
+          success: false,
+          signaled: true,
+          status: 'SIGKILL_EXIT_UNVERIFIED',
+          reason: 'SIGKILL was sent but target exit could not be confirmed'
+        };
+      }
+
       return {
         success: true,
         signaled: true,
