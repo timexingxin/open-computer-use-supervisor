@@ -69,7 +69,7 @@ export const DeletionAccounting = {
 /**
  * Validates whether a resource path is structurally safe and strictly bounded
  * to the active session's approved resources root:
- * ~/.gemini/antigravity/runtime/sessions/<sessionId>/resources/
+ * <SESSIONS_ROOT>/<sessionId>/resources/
  *
  * @param {string} targetPath
  * @param {string} sessionId
@@ -168,7 +168,7 @@ export function validateResourcePathSafety(targetPath, sessionId) {
   }
 
   // 6. Approved Session Resource Root Enforcement
-  // Must be strictly under ~/.gemini/antigravity/runtime/sessions/<sessionId>/resources/
+  // Must be strictly under <SESSIONS_ROOT>/<sessionId>/resources/
   const approvedSessionRoot = path.join(SESSIONS_ROOT, sessionId);
   const approvedResourcesRoot = path.join(approvedSessionRoot, 'resources');
 

@@ -7,7 +7,7 @@
 **Git / Build Tag**: `v1.0.0-rc.1`  
 **Verdict**: **READY FOR RELEASE CANDIDATE (RC-1)**  
 
-All progressive capability expansion phases (S1 through S4.5) and the Final Integration & Soak milestone are complete. All 133 automated unit, integration, soak, and adversarial red-team tests pass with 100% compliance.
+All progressive capability expansion phases (S1 through S4.5) and the Final Integration & Soak milestone are complete. The current suite contains 135 automated unit, integration, soak, and adversarial red-team tests; the exact-head CI result must be checked separately before release.
 
 ---
 
@@ -72,7 +72,7 @@ The following files constitute the codebase of Antigravity Process Supervisor v1
 
 ## 5. Residual Process & Resource Inventory
 
-At the conclusion of all 133 regression and soak tests:
+At the conclusion of the current regression and soak tests:
 - **Expected Active Test Processes**: **0**
 - **Expected Retired Test Processes**: **All accounted for in tombstones**
 - **Unexpected Residual Processes**: **0**
@@ -87,3 +87,10 @@ At the conclusion of all 133 regression and soak tests:
 1. **Explicit Invocations Only**: Destructive lifecycle actions are not bound to automatic session exit hooks or IDE stop hooks.
 2. **Non-Root Operation**: The Supervisor operates as an unprivileged userspace daemon. It cannot manage or inspect root-owned host processes.
 3. **Scoped Workload Focus**: The Supervisor exclusively manages workloads created with explicit creation receipts under its authority.
+
+---
+
+## 7. Dependency Audit Clarification (Playwright devDependency)
+
+- **Audit Confirmation**: Playwright (`^1.63.0`) has always been declared in `devDependencies` in `package.json` and pinned in `package-lock.json`.
+- **Clarification**: Early developer testing observations regarding missing Playwright were caused by a local environment where `npm install` had not yet been executed. With dependencies installed, the current suite has 135 tests; CI still needs exact-head verification.

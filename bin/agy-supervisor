@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// LEGACY COMPATIBILITY FALLBACK: "agy-supervisor" binary alias maintained for backward compatibility with earlier integration scripts.
 import { runCli } from '../src/cli.mjs';
 
 runCli(process.argv.slice(2)).then(code => {

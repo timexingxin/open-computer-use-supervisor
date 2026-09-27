@@ -1089,8 +1089,8 @@ export class SupervisorBroker {
   }
 
   /**
-   * Safely creates and cryptographically/structurally attests a disposable test resource.
-   * Only allowed inside ~/.gemini/antigravity/runtime/sessions/<sessionId>/resources/.
+   * Safely creates and structurally attests a disposable test resource.
+   * Only allowed inside <SESSIONS_ROOT>/<sessionId>/resources/.
    *
    * @param {Object} params - { subPath, content, isDirectory, resourceRole, creatorPid, owningPid, childReceipts }
    * @returns {Object}

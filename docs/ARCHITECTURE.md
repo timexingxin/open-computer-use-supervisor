@@ -6,7 +6,7 @@
 **Core Invariant**:
 > *"Supervisor does not decide business actions. Supervisor only governs process and resource ownership, lifecycle attestation, and cleanup safety. The safest action when ownership is uncertain is ZERO ACTION."*
 
-The Antigravity Session Process Supervisor provides deterministic, fail-closed lifecycle governance for transient processes and filesystem resources created during agentic workflows. It strictly eliminates rogue background process proliferation, resource leakage, and orphaned daemons while guaranteeing absolute immunity for user personal applications, active development environments, and critical operating system services.
+The Antigravity Session Process Supervisor provides deterministic, fail-closed lifecycle governance for transient processes and filesystem resources created during agentic workflows. It strictly eliminates rogue background process proliferation, resource leakage, and orphaned daemons while providing robust fail-closed protections for user personal applications, active development environments, and critical operating system services.
 
 ---
 

@@ -150,6 +150,19 @@ export async function discoverZCodeChainProcesses(bridgePid, timeoutMs = 5000) {
   };
 }
 
+function getDefaultBridgePath() {
+  if (process.env.ZCODE_BRIDGE_SCRIPT_PATH) {
+    return process.env.ZCODE_BRIDGE_SCRIPT_PATH;
+  }
+  if (!process.env.HOME) return '';
+  const candidates = [
+    path.join(process.env.HOME, '.local/share/open-computer-use-supervisor/mcp-bridges/zcode-cua-bridge.mjs'),
+    // LEGACY COMPATIBILITY FALLBACK: legacy antigravity bridge path retained for backward compatibility
+    path.join(process.env.HOME, '.local/share/antigravity/mcp-bridges/zcode-cua-bridge.mjs')
+  ];
+  return candidates.find(p => fs.existsSync(p)) || candidates[0];
+}
+
 /**
  * Launches an official ZCode CUA MCP bridge process chain.
  *
@@ -157,7 +170,7 @@ export async function discoverZCodeChainProcesses(bridgePid, timeoutMs = 5000) {
  * @returns {Promise<Object>}
  */
 export async function launchOfficialZCodeChain(options = {}) {
-  const defaultBridge = process.env.ZCODE_BRIDGE_SCRIPT_PATH || (process.env.HOME ? path.join(process.env.HOME, '.local/share/antigravity/mcp-bridges/zcode-cua-bridge.mjs') : '');
+  const defaultBridge = getDefaultBridgePath();
   const bridgeScript = options.bridgeScriptPath || defaultBridge;
   const baselinePids = options.baselinePids || [];
 
@@ -480,7 +493,7 @@ export async function launchTestZCodeChain(options = {}) {
  * @returns {boolean}
  */
 export function isOfficialZCodeInstalled(options = {}) {
-  const defaultBridge = process.env.ZCODE_BRIDGE_SCRIPT_PATH || (process.env.HOME ? path.join(process.env.HOME, '.local/share/antigravity/mcp-bridges/zcode-cua-bridge.mjs') : '');
+  const defaultBridge = getDefaultBridgePath();
   const bridgeScript = options.bridgeScriptPath || defaultBridge;
   return Boolean(bridgeScript && fs.existsSync(bridgeScript) && fs.existsSync('/Applications/ZCode.app'));
 }

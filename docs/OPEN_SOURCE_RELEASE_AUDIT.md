@@ -21,6 +21,7 @@
 | **ZCode Proprietary Boundary** | Zero ZCode binary files, decompiled bytecodes, or proprietary tokens | Verified. Adapter is strictly an open interoperability layer using public stdio JSON-RPC. | **PASS** |
 | **Clean Clone Test** | Must install and pass all tests in an isolated `/tmp` directory | Executed in `/tmp/open-supervisor-clean-clone-test`: **133 / 133 PASS**. | **PASS** |
 | **Production Gate Lock** | `executeAllowed = false` default fail-closed enforcement | Verified in `src/core/config.mjs` and CLI preflights. | **PASS** |
+| **Playwright Dependency Audit** | Verify Playwright test dependency is declared in packaging metadata and lockfile | Verified. `playwright: ^1.63.0` has always been properly declared in `devDependencies` in `package.json` and resolved in `package-lock.json`. Early dev test warning was solely due to local environment not running `npm install`. | **PASS** |
 
 ---
 

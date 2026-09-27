@@ -16,7 +16,7 @@ import { isNeverKill, isApprovedTempPath } from './predicates.mjs';
 import { sendBrokerRequest } from './ipc.mjs';
 
 /**
- * Generates a unique Antigravity session ID.
+ * Generates a unique supervisor session ID.
  *
  * @returns {string}
  */

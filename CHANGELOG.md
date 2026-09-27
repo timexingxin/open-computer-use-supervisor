@@ -19,5 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **TOCTOU-Hardened Resource Cleaner**: 14/15-factor pre-unlink verification for temporary files, sockets, and directories; symlink escape blocking; device/inode drift detection; and in-use handle protection.
 - **Double-Action Safety & Idempotency**: Duplicate signals return `TARGET_ALREADY_EXITED`; duplicate unlinks return `NOOP_ALREADY_CLEAN`.
 - **Tombstoning & Lifecycle State Metrics**: Bounded memory tracking for retired processes and resources.
-- **Adversarial & Soak Test Suites**: 133 automated tests validating zero signals to unmanaged services and zero unlinks of pre-existing baseline resources.
+- **Adversarial & Soak Test Suites**: 135 automated tests validating zero signals to unmanaged services and zero unlinks of pre-existing baseline resources.
 - **Production Execution Lock**: Fail-closed gate (`executeAllowed = false`) enforcing dry-run safety for general production CLI usage.
+- **Dependency Audit & Packaging**: Clarified that `playwright` devDependency has always been properly declared in `package.json` and `package-lock.json`.
+
+### Fixed
+- **S2 SIGKILL result semantics**: Report `SIGKILL_EXIT_UNVERIFIED` when the target's exit cannot be confirmed after escalation.

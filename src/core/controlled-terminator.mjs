@@ -153,6 +153,9 @@ export class ControlledTerminator {
     this.broker = options.broker || null;
     this.accounting = options.accounting || globalSignalAccounting;
     this.testExecutionMode = options.testExecutionMode || null; // Must be 'S2_DISPOSABLE_CHILD_ONLY'
+    // Test seam for post-SIGKILL observation only; authorization checks use
+    // the real OS liveness check above.
+    this.postKillLiveness = options.postKillLiveness || checkProcessAlive;
   }
 
   /**
@@ -506,18 +509,24 @@ export class ControlledTerminator {
     const killWaitStart = Date.now();
     let killExited = false;
     while (Date.now() - killWaitStart < 2000) {
-      if (!checkProcessAlive(record.pid)) {
+      if (!this.postKillLiveness(record.pid)) {
         killExited = true;
         break;
       }
       await sleep(pollIntervalMs);
     }
 
+    const outcome = killExited
+      ? { success: true, status: 'ESCALATED_TO_SIGKILL' }
+      : {
+          success: false,
+          status: 'SIGKILL_EXIT_UNVERIFIED',
+          reason: 'SIGKILL was sent but target exit could not be confirmed'
+        };
     return {
-      success: killExited,
+      ...outcome,
       signaled: true,
       escalated: true,
-      status: 'ESCALATED_TO_SIGKILL',
       signals: ['SIGTERM', 'SIGKILL'],
       pid: record.pid,
       graceIntervalMs: graceTimeoutMs,
@@ -704,6 +713,21 @@ export class ControlledTerminator {
         signal: 'SIGKILL',
         isPlaywrightTest: true
       });
+
+      // A successfully dispatched SIGKILL is not proof that the target exited.
+      // Keep the result fail-closed until the OS confirms it is no longer live.
+      const confirmDeadline = Date.now() + 3000;
+      while (Date.now() < confirmDeadline && checkProcessAlive(record.pid)) {
+        await sleep(pollIntervalMs);
+      }
+      if (checkProcessAlive(record.pid)) {
+        return {
+          success: false,
+          signaled: true,
+          status: 'SIGKILL_EXIT_UNVERIFIED',
+          reason: 'SIGKILL was sent but target exit could not be confirmed'
+        };
+      }
 
       return {
         success: true,
