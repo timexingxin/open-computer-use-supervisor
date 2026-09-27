@@ -199,6 +199,52 @@ test('TEST B (S2.6 Controlled SIGKILL Escalation): SIGTERM-resistant fixture esc
   }
 });
 
+test('TEST B2 (S2.6): unverified post-SIGKILL exit fails closed', async () => {
+  const sessionId = `test-s2-b2-${Date.now()}`;
+  const broker = new SupervisorBroker(sessionId);
+  await broker.start();
+
+  const accounting = new SignalAccounting();
+  const terminator = new ControlledTerminator(sessionId, {
+    broker,
+    accounting,
+    testExecutionMode: 'S2_DISPOSABLE_CHILD_ONLY',
+    // Only the post-SIGKILL observation is stubbed; ownership checks and
+    // signals still operate on this test-owned disposable child.
+    postKillLiveness: () => true
+  });
+
+  let child;
+  try {
+    const resistantCode = 'process.on("SIGTERM", () => {}); setInterval(() => {}, 1000);';
+    const spawned = await spawnAttestedProcess(
+      sessionId,
+      () => spawn('node', ['-e', resistantCode]),
+      { role: S2_CONTROLLED_CONFIG.disposableRole, safeToKill: true }
+    );
+    assert.strictEqual(spawned.success, true);
+    child = spawned.child;
+
+    const result = await terminator.terminateDisposableChild(spawned.record, {
+      graceTimeoutMs: 300,
+      allowKillEscalation: true
+    });
+
+    assert.strictEqual(result.success, false);
+    assert.strictEqual(result.signaled, true);
+    assert.strictEqual(result.escalated, true);
+    assert.strictEqual(result.status, 'SIGKILL_EXIT_UNVERIFIED');
+    assert.notStrictEqual(result.status, 'ESCALATED_TO_SIGKILL');
+    assert.deepStrictEqual(result.signals, ['SIGTERM', 'SIGKILL']);
+    assert.strictEqual(accounting.sigtermSent, 1);
+    assert.strictEqual(accounting.sigkillSent, 1);
+    assert.strictEqual(checkProcessAlive(child.pid), false);
+  } finally {
+    if (child && checkProcessAlive(child.pid)) child.kill('SIGKILL');
+    await broker.stop();
+  }
+});
+
 test('TEST C (S2.10 Foreign Sleep Test): External sleep rejected with NO_SIGNAL', async () => {
   const sessionId = `test-s2-c-${Date.now()}`;
   const broker = new SupervisorBroker(sessionId);

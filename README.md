@@ -144,7 +144,7 @@ npm install
 npm test
 ```
 
-> **133 automated tests passed in the release validation environment**, covering unit predicates, adversarial edge cases, double-action idempotency, and 5-cycle soak integration.
+> **135 automated tests passed in the release validation environment**, covering unit predicates, adversarial edge cases, double-action idempotency, and 5-cycle soak integration.
 
 ### Quick Example
 
@@ -190,7 +190,7 @@ open-computer-use-supervisor/
 │
 ├── tests/
 │   ├── fixtures/              # Synthetic mock process fixtures
-│   └── *.test.mjs             # 16 comprehensive test suites (133 tests)
+│   └── *.test.mjs             # 16 comprehensive test suites (135 tests)
 │
 ├── docs/
 │   ├── ARCHITECTURE.md        # System architecture specification
